@@ -8,19 +8,38 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 env:
-  SOLUTION_FILE: 'Homeworks/UnitTests/src/*.sln' 
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: 'ASP.NET/Homeworks/UnitTests/src' 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v4
+    
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+        dotnet-version: '8.0.x'
+    
+    - name: Change to solution directory
+      working-directory: ./ASP.NET/Homeworks/UnitTests/src
+      run: pwd
+    
+    - name: Restore and build
+      working-directory: ./ASP.NET/Homeworks/UnitTests/src
+      run: |
+        dotnet restore
+        dotnet build --configuration Release --no-restore
+    
+    - name: Run tests
+      working-directory: ./ASP.NET/Homeworks/UnitTests/src
+      run: dotnet test --no-build --configuration Release --logger "trx"
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: ASP.NET/Homeworks/UnitTests/src/**/TestResults/*.trx
+        retention-days: 30
