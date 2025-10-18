@@ -1,45 +1,30 @@
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
 name: .NET
+name: Run Calculator Tests
+
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-env:
-  DOTNET_VERSION: '8.0.x'
-  SOLUTION_FILE: 'ASP.NET/Homeworks/UnitTests/src' 
+    branches: [ main ]
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.x'
     
-    - name: Change to solution directory
-      working-directory: ./ASP.NET/Homeworks/UnitTests/src
-      run: pwd
-    
-    - name: Restore and build
-      working-directory: ./ASP.NET/Homeworks/UnitTests/src
-      run: |
-        dotnet restore
-        dotnet build --configuration Release --no-restore
-    
     - name: Run tests
-      working-directory: ./ASP.NET/Homeworks/UnitTests/src
-      run: dotnet test --no-build --configuration Release --logger "trx"
-    
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results
-        path: ASP.NET/Homeworks/UnitTests/src/**/TestResults/*.trx
-        retention-days: 30
+      run: |
+        cd Homeworks/UnitTests/src
+        dotnet restore
+        dotnet build --configuration Release
+        dotnet test --configuration Release --verbosity normal
