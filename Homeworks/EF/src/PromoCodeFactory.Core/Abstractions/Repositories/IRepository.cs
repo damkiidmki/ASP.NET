@@ -1,15 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using PromoCodeFactory.Core.Domain;
 
-namespace PromoCodeFactory.Core.Abstractions.Repositories
+namespace PromoCodeFactory.Core.Abstractions.Repositories;
+
+public interface IRepository<TEntity>
 {
-    public interface IRepository<T>
-        where T : BaseEntity
-    {
-        Task<IEnumerable<T>> GetAllAsync();
+    Task<IEnumerable<TEntity>> GetAllAsync();
 
-        Task<T> GetByIdAsync(Guid id);
-    }
+    Task<TEntity?> GetByIdAsync(params object[] keys);
+
+    Task<TEntity?> CreateAsync(TEntity entity);
+
+    Task<TEntity?> UpdateAsync(TEntity entity);
+
+    Task<bool> DeleteAsync(params object[] keys);
+
+    Task<bool> DeleteAsync(TEntity entity);
+
+    Task<bool> ExistsAsync(params object[] keys);
+
+    IQueryable<TEntity> GetQueryable();
+
+    Task<IEnumerable<TEntity>> CreateRangeAsync(IEnumerable<TEntity> entities);
+
+    Task<IEnumerable<TEntity>> UpdateRangeAsync(IEnumerable<TEntity> entities);
+
+    Task<bool> DeleteRangeAsync(IEnumerable<TEntity> entities);
+
+    Task<bool> DeleteRangeAsync(IEnumerable<object[]> keys);
+
+    Task<IEnumerable<TEntity>> GetByIdsAsync(IEnumerable<object[]> keys);
+
+    Task<int> GetCountAsync();
 }

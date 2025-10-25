@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace PromoCodeFactory.Core.Domain
+namespace PromoCodeFactory.Core.Domain;
+
+public class BaseEntity
 {
-    public class BaseEntity
-    {
-        public Guid Id { get; set; }
-    }
+    public Guid Id { get; set; }
 }
