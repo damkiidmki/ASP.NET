@@ -1,7 +1,6 @@
-﻿namespace Pcf.Administration.DataAccess.Data
+﻿namespace Pcf.Administration.DataAccess.Data;
+
+public interface IDbInitializer
 {
-    public interface IDbInitializer
-    {
-        void InitializeDb();
-    }
+    void InitializeDb();
 }
