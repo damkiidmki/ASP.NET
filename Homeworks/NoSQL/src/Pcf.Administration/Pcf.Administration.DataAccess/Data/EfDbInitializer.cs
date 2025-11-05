@@ -1,22 +1,49 @@
-﻿namespace Pcf.Administration.DataAccess.Data
-{
-    public class EfDbInitializer
-        : IDbInitializer
-    {
-        private readonly DataContext _dataContext;
+﻿using MongoDB.Driver;
+using Pcf.Administration.Core.Domain.Administration;
+using Pcf.Administration.DataAccess;
+using Pcf.Administration.DataAccess.Data;
 
-        public EfDbInitializer(DataContext dataContext)
+public class MongoDbInitializer : IDbInitializer
+{
+    private readonly MongoDbContext _context;
+
+    public MongoDbInitializer(MongoDbContext context)
+    {
+        _context = context;
+    }
+
+    public void InitializeDb()
+    {
+        SeedData();
+    }
+
+    private void SeedData()
+    {
+        SeedRoles();
+        SeedEmployees();
+    }
+
+    private void SeedRoles()
+    {
+        var roleCollection = _context.GetCollection<Role>();
+        var existingRoles = roleCollection.Find(_ => true).Any();
+
+        if (!existingRoles)
         {
-            _dataContext = dataContext;
+            var roles = FakeDataFactory.Roles;
+            roleCollection.InsertMany(roles);
         }
-        
-        public void InitializeDb()
+    }
+
+    private void SeedEmployees()
+    {
+        var employeeCollection = _context.GetCollection<Employee>();
+        var existingEmployees = employeeCollection.Find(_ => true).Any();
+
+        if (!existingEmployees)
         {
-            _dataContext.Database.EnsureDeleted();
-            _dataContext.Database.EnsureCreated();
-            
-            _dataContext.AddRange(FakeDataFactory.Employees);
-            _dataContext.SaveChanges();
+            var employees = FakeDataFactory.Employees;
+            employeeCollection.InsertMany(employees);
         }
     }
 }

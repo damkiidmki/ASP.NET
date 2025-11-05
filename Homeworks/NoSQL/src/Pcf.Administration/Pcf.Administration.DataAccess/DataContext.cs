@@ -1,30 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pcf.Administration.Core.Domain.Administration;
-using Pcf.Administration.DataAccess.Data;
+﻿using MongoDB.Driver;
 
-namespace Pcf.Administration.DataAccess
+namespace Pcf.Administration.DataAccess;
+
+public class MongoDbContext
 {
-    public class DataContext
-        : DbContext
+    private readonly IMongoDatabase _database;
+
+    public MongoDbContext(IMongoClient client, string databaseName)
     {
-        public DbSet<Role> Roles { get; set; }
-        
-        public DbSet<Employee> Employees { get; set; }
+        _database = client.GetDatabase(databaseName);
+    }
 
-        public DataContext()
-        {
-            
-        }
-        
-        public DataContext(DbContextOptions<DataContext> options)
-            : base(options)
-        {
-
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-
-        }
+    public IMongoCollection<T> GetCollection<T>(string collectionName = null)
+    {
+        collectionName ??= typeof(T).Name.ToLower() + "s";
+        return _database.GetCollection<T>(collectionName);
     }
 }

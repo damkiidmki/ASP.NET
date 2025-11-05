@@ -1,12 +1,7 @@
-﻿using System;
+﻿namespace Pcf.Administration.Core.Domain.Administration;
 
-namespace Pcf.Administration.Core.Domain.Administration
+public class Role : BaseEntity
 {
-    public class Role
-        : BaseEntity
-    {
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-    }
+    public string Name { get; set; }
+    public string Description { get; set; }
 }
