@@ -1,26 +1,30 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
+using EasyNetQ;
+using Pcf.Integration;
 using Pcf.ReceivingFromPartner.Core.Abstractions.Gateways;
 
 namespace Pcf.ReceivingFromPartner.Integration
 {
-    public class AdministrationGateway
-        : IAdministrationGateway
+    public class PartnerManagerEventPublisher 
+        : IPartnerManagerEventPublisher
     {
-        private readonly HttpClient _httpClient;
+        private readonly IBus _bus;
 
-        public AdministrationGateway(HttpClient httpClient)
+        public PartnerManagerEventPublisher (IBus bus)
         {
-            _httpClient = httpClient;
+            _bus = bus;
         }
 
         public async Task NotifyAdminAboutPartnerManagerPromoCode(Guid partnerManagerId)
         {
-            var response = await _httpClient.PostAsync($"api/v1/employees/{partnerManagerId}/appliedPromocodes",
-                new StringContent(string.Empty));
+            var message = new PartnerManagerPromoCodeAppliedEvent
+            {
+                PartnerManagerId = partnerManagerId
+            };
 
-            response.EnsureSuccessStatusCode();
+            await _bus.PubSub.PublishAsync(message, config => 
+                config.WithTopic("PartnerManagerPromoCodeApplied"));
         }
     }
 }

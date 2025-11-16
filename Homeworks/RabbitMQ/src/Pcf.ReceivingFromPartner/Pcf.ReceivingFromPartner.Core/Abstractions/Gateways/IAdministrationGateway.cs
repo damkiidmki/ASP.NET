@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Pcf.ReceivingFromPartner.Core.Abstractions.Gateways
 {
-    public interface IAdministrationGateway
+    public interface IPartnerManagerEventPublisher
     {
         Task NotifyAdminAboutPartnerManagerPromoCode(Guid partnerManagerId);
     }

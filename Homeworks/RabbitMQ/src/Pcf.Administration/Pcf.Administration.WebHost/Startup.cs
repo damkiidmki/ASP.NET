@@ -10,6 +10,9 @@ using Pcf.Administration.DataAccess.Repositories;
 using Pcf.Administration.DataAccess.Data;
 using Pcf.Administration.Core.Abstractions.Repositories;
 using System;
+using EasyNetQ;
+using Microsoft.Extensions.Logging;
+using Pcf.Integration;
 
 namespace Pcf.Administration.WebHost
 {
@@ -38,6 +41,13 @@ namespace Pcf.Administration.WebHost
                 x.UseLazyLoadingProxies();
             });
 
+            var rabbitMqConnection = Configuration.GetConnectionString("RabbitMQ");
+
+            services.AddEasyNetQ(rabbitMqConnection);   
+
+            // Регистрируйте ваш обработчик
+            services.AddScoped<PartnerManagerPromoCodeAppliedEventHandler>();
+            
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             services.AddOpenApiDocument(options =>
@@ -66,15 +76,42 @@ namespace Pcf.Administration.WebHost
             });
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
 
             dbInitializer.InitializeDb();
+    
+            // Запускаем подписку при старте приложения
+            var lifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+    
+            lifetime.ApplicationStarted.Register(async () =>
+            {
+                try
+                {
+                    var bus = app.ApplicationServices.GetRequiredService<IBus>();
+                    await bus.PubSub.SubscribeAsync<PartnerManagerPromoCodeAppliedEvent>(
+                        "partner-manager-promocode-applied",
+                        async message => 
+                        {
+                            using var scope = app.ApplicationServices.CreateScope();
+                            var handler = scope.ServiceProvider.GetRequiredService<PartnerManagerPromoCodeAppliedEventHandler>();
+                            await handler.HandleAsync(message);
+                        },
+                        config => config.WithTopic("PartnerManagerPromoCodeApplied")
+                    );
+                    
+                    var logger = app.ApplicationServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation("Subscribed to PartnerManagerPromoCodeAppliedEvent");
+                }
+                catch (Exception ex)
+                {
+                    var logger = app.ApplicationServices.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Failed to subscribe to PartnerManagerPromoCodeAppliedEvent");
+                }
+            });
         }
     }
 }
