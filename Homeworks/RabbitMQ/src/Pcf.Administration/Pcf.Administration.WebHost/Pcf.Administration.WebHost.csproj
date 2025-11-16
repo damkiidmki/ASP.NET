@@ -7,11 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Pcf.Integration\Pcf.Integration.csproj" />
       <ProjectReference Include="..\Pcf.Administration.Core\Pcf.Administration.Core.csproj" />
       <ProjectReference Include="..\Pcf.Administration.DataAccess\Pcf.Administration.DataAccess.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="EasyNetQ" Version="8.0.0-beta99" />
       <PackageReference Include="EFCore.NamingConventions" Version="8.0.3" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.7" />

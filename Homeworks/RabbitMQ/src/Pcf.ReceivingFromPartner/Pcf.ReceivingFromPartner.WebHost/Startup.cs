@@ -1,4 +1,5 @@
 using System;
+using EasyNetQ;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -34,15 +35,16 @@ namespace Pcf.ReceivingFromPartner.WebHost
             services.AddScoped<INotificationGateway, NotificationGateway>();
             services.AddScoped<IDbInitializer, EfDbInitializer>();
 
+            var rabbitMqConnection = Configuration.GetConnectionString("RabbitMQ");
+
+            services.AddEasyNetQ(rabbitMqConnection);
+            
             services.AddHttpClient<IGivingPromoCodeToCustomerGateway, GivingPromoCodeToCustomerGateway>(c =>
             {
                 c.BaseAddress = new Uri(Configuration["IntegrationSettings:GivingToCustomerApiUrl"]);
             });
 
-            services.AddHttpClient<IAdministrationGateway, AdministrationGateway>(c =>
-            {
-                c.BaseAddress = new Uri(Configuration["IntegrationSettings:AdministrationApiUrl"]);
-            });
+            services.AddScoped<IPartnerManagerEventPublisher, PartnerManagerEventPublisher>();
 
             services.AddDbContext<DataContext>(x =>
             {
