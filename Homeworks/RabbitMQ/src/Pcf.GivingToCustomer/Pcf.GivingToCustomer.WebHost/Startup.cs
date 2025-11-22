@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +13,7 @@ using Pcf.GivingToCustomer.DataAccess.Data;
 using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.Integration;
+using Pcf.GivingToCustomer.WebHost.Services;
 
 namespace Pcf.GivingToCustomer.WebHost
 {
@@ -28,11 +30,19 @@ namespace Pcf.GivingToCustomer.WebHost
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.ConfigureEndpointDefaults(lo =>
+                {
+                    lo.Protocols = HttpProtocols.Http2;
+                });
+            });
             services.AddControllers().AddMvcOptions(x =>
                 x.SuppressAsyncSuffixInActionNames = false);
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<INotificationGateway, NotificationGateway>();
             services.AddScoped<IDbInitializer, EfDbInitializer>();
+            services.AddGrpc();
             services.AddDbContext<DataContext>(x =>
             {
                 //x.UseSqlite("Filename=PromocodeFactoryGivingToCustomerDb.sqlite");
@@ -60,6 +70,7 @@ namespace Pcf.GivingToCustomer.WebHost
             else
             {
                 app.UseHsts();
+                app.UseHttpsRedirection();
             }
 
             app.UseOpenApi();
@@ -67,13 +78,14 @@ namespace Pcf.GivingToCustomer.WebHost
             {
                 x.DocExpansion = "list";
             });
-
-            app.UseHttpsRedirection();
-
+            
             app.UseRouting();
-
+            
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+            
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapGrpcService<CustomersGrpcService>();
                 endpoints.MapControllers();
             });
 

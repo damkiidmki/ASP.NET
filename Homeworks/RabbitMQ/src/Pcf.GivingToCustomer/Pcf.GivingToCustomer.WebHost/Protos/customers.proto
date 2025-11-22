@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option csharp_namespace = "Pet.GivingToCustomer.WebHost.Protos";
+
+service CustomersService {
+  rpc GetCustomers (google.protobuf.Empty) returns (CustomerListResponse);
+  rpc GetCustomer (GetCustomerRequest) returns (CustomerFullResponse);
+  rpc CreateCustomer (CreateCustomerRequest) returns (google.protobuf.StringValue);
+  rpc UpdateCustomer (UpdateCustomerRequest) returns (google.protobuf.Empty);
+  rpc DeleteCustomer (DeleteCustomerRequest) returns (google.protobuf.Empty);
+}
+
+message GetCustomerRequest {
+  string id = 1;
+}
+
+message CreateCustomerRequest {
+  string email = 1;
+  string first_name = 2;
+  string last_name = 3;
+  repeated string preference_ids = 4;
+}
+
+message UpdateCustomerRequest {
+  string id = 1;
+  string email = 2;
+  string first_name = 3;
+  string last_name = 4;
+  repeated string preference_ids = 5;
+}
+
+message DeleteCustomerRequest {
+  string id = 1;
+}
+
+message CustomerListResponse {
+  repeated CustomerShortResponse customers = 1;
+}
+
+message CustomerShortResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+}
+
+message CustomerFullResponse {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated PreferenceResponse preferences = 5;
+  repeated PromoCodeResponse promoCodes = 6;
+}
+
+message PreferenceResponse {
+  string id = 1;
+  string name = 2;
+}
+
+message PromoCodeResponse {
+  string id = 1;
+  string code = 2;
+  string service_info = 3;
+  string begin_date = 4;
+  string end_date = 5;
+  string partner_id = 6;
+}
