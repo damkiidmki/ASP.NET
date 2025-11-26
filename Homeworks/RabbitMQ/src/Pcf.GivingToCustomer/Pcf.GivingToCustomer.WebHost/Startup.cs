@@ -13,6 +13,7 @@ using Pcf.GivingToCustomer.DataAccess.Data;
 using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.Integration;
+using Pcf.GivingToCustomer.WebHost.Hubs;
 using Pcf.GivingToCustomer.WebHost.Services;
 
 namespace Pcf.GivingToCustomer.WebHost
@@ -37,12 +38,24 @@ namespace Pcf.GivingToCustomer.WebHost
                     lo.Protocols = HttpProtocols.Http2;
                 });
             });
+           services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        .SetIsOriginAllowed(origin => true);
+                });
+            });
+            
             services.AddControllers().AddMvcOptions(x =>
                 x.SuppressAsyncSuffixInActionNames = false);
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<INotificationGateway, NotificationGateway>();
             services.AddScoped<IDbInitializer, EfDbInitializer>();
             services.AddGrpc();
+            services.AddSignalR();
             services.AddDbContext<DataContext>(x =>
             {
                 //x.UseSqlite("Filename=PromocodeFactoryGivingToCustomerDb.sqlite");
@@ -63,6 +76,7 @@ namespace Pcf.GivingToCustomer.WebHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IDbInitializer dbInitializer)
         {
+            app.UseCors("AllowAll");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -85,6 +99,7 @@ namespace Pcf.GivingToCustomer.WebHost
             
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<CustomerHub>("/hubs/customers");
                 endpoints.MapGrpcService<CustomersGrpcService>();
                 endpoints.MapControllers();
             });

@@ -31,8 +31,4 @@
         <Protobuf Include="Protos\customers.proto" GrpcServices="Server" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Grpc\" />
-    </ItemGroup>
-
 </Project>
